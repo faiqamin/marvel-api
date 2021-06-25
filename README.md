@@ -17,7 +17,9 @@ Note:
 I used Redis as the caching method. First, I recursively call the api, concating all individual API response in a temporary array, until all the data has been retrieved. Then I set the cache. To prepare for the possibility of new characters added at the source in the future, I set an expiration timer for the cache. For testing purposes, the period is set at 60,000 seconds. 
 
 The first call to the characters API took around 40 - 55 seconds suring my dev test. 
+
 ![image](https://user-images.githubusercontent.com/35554291/123450688-9229d280-d60f-11eb-8444-d5f2e08316f6.png)
 
 The subsequent call to the cache took around 15-25 milliseconds.
+
 ![image](https://user-images.githubusercontent.com/35554291/123450841-ba193600-d60f-11eb-9549-5b60ae315e09.png)
