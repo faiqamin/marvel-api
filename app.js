@@ -2,18 +2,28 @@
 const express = require("express");
 const fetch = require("node-fetch");
 const redis = require("redis");
+const router = require("router");
 var crypto = require('crypto');
 var _ = require('underscore');
 const { request } = require("http");
 const { response } = require("express");
+var secret = require('../secret');
 
 const PORT = process.env.PORT || 8080;
 const PORT_REDIS = process.env.PORT || 6379;
 const app = express();
 const redisClient = redis.createClient(PORT_REDIS);
 
-var marvelPublicKey = "2bb6f7b1cfc938f310fad36af414cf2c";
-var marvelPrivateKey = "49677764965b161ade764eb93a40bc01fa1131b6";
+//start swagger
+var swaggerUi = require('swagger-ui-express'),
+    swaggerDocument = require('./swagger.json');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/v1', router);
+//end swagger
+
+var marvelPublicKey = secret.marvelPublicKey;
+var marvelPrivateKey = secret.marvelPrivateKey;
 var ts = Date.now();
 var hashString = ts + marvelPrivateKey + marvelPublicKey;
 var hash = crypto.createHash('md5').update(hashString).digest('hex');
@@ -96,7 +106,7 @@ app.get("/characters/:id", async (req, res) => {
 
     var results = data.results;
     var formattedResponse = {
-        "id":  _.pluck(results, "id").toString(),
+        "id":  _.pluck(results, "id")[0],
         "name": _.pluck(results, "name").toString(),
         "description": _.pluck(results, "description").toString()
     }
