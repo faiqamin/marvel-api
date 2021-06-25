@@ -4,6 +4,8 @@ const fetch = require("node-fetch");
 const redis = require("redis");
 var crypto = require('crypto');
 var _ = require('underscore');
+const { request } = require("http");
+const { response } = require("express");
 
 const PORT = process.env.PORT || 8080;
 const PORT_REDIS = process.env.PORT || 6379;
@@ -16,11 +18,13 @@ var ts = Date.now();
 var hashString = ts + marvelPrivateKey + marvelPublicKey;
 var hash = crypto.createHash('md5').update(hashString).digest('hex');
 
-//Assessment 1
+var marvelUrl = "https://gateway.marvel.com:443/v1/public";
+
+// Assessment 1
 var marvelAPILimit = 100;
 var marvelAPIOffset = 0;
 
-var marvelUrl1 = new URL("https://gateway.marvel.com:443/v1/public/characters");
+var marvelUrl1 = new URL(marvelUrl + "/characters");
 marvelUrl1.searchParams.append("apikey", marvelPublicKey);
 marvelUrl1.searchParams.append("ts", ts);
 marvelUrl1.searchParams.append("hash", hash);
@@ -28,7 +32,7 @@ marvelUrl1.searchParams.append("limit", marvelAPILimit);
 
 const set = (key, value) => {
    redisClient.set(key, JSON.stringify(value));
-   redisClient.expire(key, 600);
+   redisClient.expire(key, 60000);
 }
 const get = async (req, res, next) => {
 
@@ -49,7 +53,6 @@ const get = async (req, res, next) => {
 }
 var count = 0;
 var tempData = [];
-
 
 app.get("/characters", get, async (req, res) => {
     const data = await recursive();
@@ -81,16 +84,16 @@ const recursive = async () => {
 
 
 //Assessment 2
-
 app.get("/characters/:id", async (req, res) => {
     var charID = req.params.id;
-    var marvelUrl2 = new URL("https://gateway.marvel.com:443/v1/public/characters" + "/" + charID);
+    var marvelUrl2 = new URL(marvelUrl + "/characters" + "/" + charID);
+
     marvelUrl2.searchParams.append("apikey", marvelPublicKey);
     marvelUrl2.searchParams.append("ts", ts);
     marvelUrl2.searchParams.append("hash", hash);
 
     const {data} = await fetch(marvelUrl2.href).then(response => response.json());
-    
+
     var results = data.results;
     var formattedResponse = {
         "id":  _.pluck(results, "id").toString(),
@@ -101,4 +104,6 @@ app.get("/characters/:id", async (req, res) => {
     res.status(200).send(formattedResponse);
 });
 
-app.listen(PORT, () => console.log("App listening at http://localhost:8080"));
+var server = app.listen(PORT, () => console.log("App listening at http://localhost:8080"));
+
+module.exports = server;
