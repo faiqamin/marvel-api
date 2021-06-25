@@ -7,7 +7,6 @@ describe('All Characters ID API', () => {
       .get('/characters')
     expect(res.statusCode).toEqual(200)
     expect(res.length).not.toBe(0);
-
   })
 })
 
@@ -21,7 +20,6 @@ describe('Character Details API', () => {
       name: expect.any(String),
       description: expect.any(String)
     })
-
   })
 })
 
